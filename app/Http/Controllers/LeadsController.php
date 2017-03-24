@@ -21,7 +21,7 @@ class LeadsController extends Controller
      */
     public function index()
     {
-        $leads = Lead::all();
+        $leads = Lead::paginate(5);
     	return $leads;
     }
 
@@ -79,20 +79,16 @@ class LeadsController extends Controller
      */
     public function show($id)
     {
-        $post= Post::find($id);
-
-            if(!$post){
-                $response = Response::json([
-                    'error' => [
-                        'message' => 'This post cannot be found.'
-                    ]
-                ], 404);
-                return $response;
-            }
-
-            $response = Response::json($post
-                , 200);
-            return $response;
+        $lead = Lead::find($id);
+        if (!$lead){
+        	$response = Response::json([
+        		'error' =>[
+        		'message' => 'This record cannot be found.']
+        		],404);
+        	return $response;
+        }
+        $response = Response::json($lead, 200);
+        return $response;
     }
 
     /**
@@ -115,7 +111,8 @@ class LeadsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if((!$request->title) || (!$request->content)){
+        if((!$request->first_name) || (!$request->last_name)
+        	|| (!$request->email) || (!$request->telephone_number)){
 
             $response = Response::json([
                 'error' => [
@@ -125,16 +122,16 @@ class LeadsController extends Controller
             return $response;
         }
 
-        $post = Post::find($id);
-        $post->title = $request->title;
-        $post->content = $request->content;
-        $post->slug = Str::slug($request->title, '-');
-        $post->user_id = $request->user_id;
-        $post->save();
+        $lead = Lead::find($id);
+        $lead->first_name = $request->first_name;
+        $lead->last_name = $request->last_name;
+        $lead->email = $request->email;
+        $lead->telephone_number = $request->telephone_number;
+        $lead->save();
 
         $response = Response::json([
-            'message' => 'The post has been updated.',
-            'data' => $post,
+            'message' => 'The lead has been updated.',
+            'data' => $lead,
         ], 200);
 
         return $response;
@@ -148,22 +145,22 @@ class LeadsController extends Controller
      */
     public function destroy($id)
     {
-        $post = Post::find($id);
+        $lead = Lead::find($id);
 
-        if(!$post) {
+        if(!$lead) {
             $response = Response::json([
                 'error' => [
-                    'message' => 'The post cannot be found.'
+                    'message' => 'The lead cannot be found.'
                 ]
             ], 404);
 
             return $response;
         }
 
-        Post::destroy($id);
+        Lead::destroy($id);
 
         $response = Response::json([
-            'message' => 'The post has been deleted.'
+            'message' => 'The lead has been deleted.'
         ], 200);
 
         return $response;
